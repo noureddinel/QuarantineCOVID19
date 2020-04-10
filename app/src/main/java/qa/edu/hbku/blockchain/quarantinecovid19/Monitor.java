@@ -101,14 +101,14 @@ public class Monitor extends AppCompatActivity {
         boolean scan = wifiManager.startScan();
         if (scan) {
             wifiScanResultsNow = wifiManager.getScanResults();
-            storeWifiRecords(wifiScanResultsNow);
+            checkWifiRecords(wifiScanResultsNow);
         }
         cellsInfoListNow = telephonyManager.getAllCellInfo();
-        storeCellsRecords(cellsInfoListNow);
+        checkCellsRecords(cellsInfoListNow);
         IamWithinQuarantine();
     }
 
-    public void storeWifiRecords(List<ScanResult> res) throws JSONException {
+    public void checkWifiRecords(List<ScanResult> res) throws JSONException {
         for (int i=0; i<res.size(); i++){
              if (myScanResults.contains(res.get(i).BSSID)){
                 similarityIndex ++;
@@ -121,7 +121,7 @@ public class Monitor extends AppCompatActivity {
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
 
-    public void storeCellsRecords(List<CellInfo> res) throws JSONException {
+    public void checkCellsRecords(List<CellInfo> res) throws JSONException {
         String ID;
         for (final CellInfo info : res) {
             JSONObject obj = new JSONObject();
