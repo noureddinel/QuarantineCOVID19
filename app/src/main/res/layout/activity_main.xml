@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <Button
+        android:id="@+id/scanBtn"
+        android:layout_width="185dp"
+        android:layout_height="0dp"
+        android:layout_margin="15dp"
+        android:layout_marginBottom="16dp"
+        android:background="@color/colorPrimary"
+        android:tag="1"
+        android:text="Scan to setup my quarantine area"
+        android:textColor="@color/colorButton"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        tools:layout_editor_absoluteX="7dp"
+        tools:ignore="MissingConstraints" />
+
+    <Button
+        android:id="@+id/confirmBtn"
+        android:layout_width="164dp"
+        android:layout_height="0dp"
+        android:layout_margin="15dp"
+        android:layout_marginBottom="16dp"
+        android:background="@color/colorAccent"
+        android:enabled="false"
+        android:visibility="invisible"
+        android:tag="1"
+        android:text="Confirm my quarantine area"
+        android:textColor="@color/colorButton"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="220dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="495dp"
+        android:orientation="vertical"
+        tools:layout_editor_absoluteX="8dp"
+        tools:layout_editor_absoluteY="8dp">
+
+        <TextView
+            android:id="@+id/textView5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:text="WiFi and Cell IDs:"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+        <LinearLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/network"
+            android:gravity="start|center"
+            android:layout_height="wrap_content"
+            android:layout_width="fill_parent"
+            android:orientation="horizontal"
+            android:layout_margin="2dp"
+            android:paddingBottom="5dp"
+            android:paddingTop="5dp"
+            android:paddingLeft="5dp">
+            <TextView
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:textStyle="bold"
+                android:layout_height="wrap_content"
+                android:text="ID:">
+            </TextView>
+            <TextView
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:textStyle="bold"
+                android:layout_height="wrap_content"
+                android:text="ID2:">
+            </TextView>
+
+            <TextView
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:textStyle="bold"
+                android:text="Min RSSI (dBm)"
+                android:layout_height="wrap_content">
+            </TextView>
+            <TextView
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:textStyle="bold"
+                android:text="Max RSSI (dBm)"
+                android:layout_height="wrap_content">
+            </TextView>
+        </LinearLayout>
+        <ListView
+            android:id="@+id/listRes"
+            android:layout_width="match_parent"
+            android:layout_weight="1"
+            android:divider="#00cc99"
+            android:dividerHeight="4dp"
+            android:layout_height="0dp" >
+        </ListView>
+    </LinearLayout>
+
+
+</android.support.constraint.ConstraintLayout>

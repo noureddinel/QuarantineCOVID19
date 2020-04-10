@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">QuarantineCOVID19</string>
+
+    <string name="ssid_msg">SSID: %s </string>
+    <string name="bssid_msg">BTSID: %s </string>
+    <string name="id_msg">ID: %s </string>
+    <string name="capabilities_msg">Capabilities: %s</string>
+    <string name="frecuency_msg">Frecuency: %s MHz</string>
+    <string name="min_rssi_msg">  Min RSSI: %s dBm </string>
+    <string name="max_rssi_msg">  Max RSSI: %s dBm </string>
+
+
+    <string name="wifi_is_not_enabled_msg">WiFi is not enabled</string>
+    <string name="wifi_disabling_msg">WiFi is currently being disabling</string>
+    <string name="wifi_disabled_msg">WiFi is disabled</string>
+    <string name="wifi_enabling_msg">WiFi is currently being enabling</string>
+    <string name="wifi_enabled_msg">WiFi is enabled</string>
+    <string name="wifi_unknown_state_msg">WiFi is in an unknown state</string>
+    <string name="wifi_found_msg">%d WiFi APs found</string>
+    <string name="cell_found_msg">%d Cell IDs found</string>
+
+</resources>
