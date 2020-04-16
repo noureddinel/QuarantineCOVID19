@@ -2,11 +2,14 @@ package qa.edu.hbku.blockchain.quarantinecovid19;
 
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.location.LocationManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.Build;
@@ -42,7 +45,7 @@ import java.util.TimerTask;
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "QuarantineCOVID19";
     private static final String GEO_FILE_NAME = "Geo_res.txt";
-    private static final int SCAN_FREQUENCY = 3000; //3 Seconds
+    private static final int SCAN_FREQUENCY = 2000; //2 Seconds
     private  static final int INIT_SCAN = 0;
     private  static final int MONITOR_SCAN = 1;
 
@@ -67,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
     SharedPreferences.Editor geoFencingEditor;
     ScanResults myScanResults;
 
+
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,7 +82,10 @@ public class MainActivity extends AppCompatActivity {
 
         geoFencingPref = getApplicationContext().getSharedPreferences(GEO_FILE_NAME,  0);
         geoFencingEditor = geoFencingPref.edit();
-
+        final LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            buildAlertMessageNoGps();
+        }
 
         scanBtn = findViewById(R.id.scanBtn);
         confirmBtn = findViewById(R.id.confirmBtn);
@@ -211,6 +218,25 @@ public class MainActivity extends AppCompatActivity {
         _editor.apply();
     }
 
+    private void buildAlertMessageNoGps() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Your GPS seems to be disabled, do you want to enable it?")
+                .setCancelable(false)
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(final DialogInterface dialog, final int id) {
+                        startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(final DialogInterface dialog, final int id) {
+                        dialog.cancel();
+                    }
+                });
+        final AlertDialog alert = builder.create();
+        alert.show();
+    }
+
+
     private class doAsynchronousScan extends TimerTask {
         @Override
         public void run() {
@@ -231,3 +257,4 @@ public class MainActivity extends AppCompatActivity {
     }
 
 }
+
