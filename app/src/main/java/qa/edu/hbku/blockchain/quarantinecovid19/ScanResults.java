@@ -44,7 +44,7 @@ public class ScanResults {
             obj.put("ID2", ID2);
             scanResEditor.putString(ID, obj.toString());
         }
-        System.out.println(scanResPref.getAll());
+        //System.out.println(scanResPref.getAll());
         scanResEditor.apply();
     }
 
@@ -80,7 +80,7 @@ public class ScanResults {
         return null;
     }
 
-    public String getRecord(int pos) {
+    public String getID(int pos) {
         if (scanResPref.getAll().size() > pos) {
             int i = 0;
             for (Map.Entry<String, ?> entry : scanResPref.getAll().entrySet()){

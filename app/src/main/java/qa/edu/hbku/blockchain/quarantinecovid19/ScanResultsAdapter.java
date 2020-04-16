@@ -33,7 +33,7 @@ public class ScanResultsAdapter extends BaseAdapter {
 
     @Override
     public Object getItem(int position) { //One scan
-        return results.getRecord(position);
+        return results.getID(position);
     }
 
     @Override
@@ -53,7 +53,7 @@ public class ScanResultsAdapter extends BaseAdapter {
         }
 
         try {
-            ID = results.getRecord(position);
+            ID = results.getID(position);
             MinRSSI = results.getMinRssi(ID);
             MaxRSSI = results.getMaxRssi(ID);
             ID2 = results.getID2(ID);

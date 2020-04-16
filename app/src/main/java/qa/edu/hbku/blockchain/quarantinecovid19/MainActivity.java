@@ -98,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
                     scanBtn.setText("Stop Scanning");
                     timer = new Timer();
                     num_records = 0;
-                    clearSharedReferences();
+                    clearSharedReferences(geoFencingEditor);
                     timerTask = new doAsynchronousScan();
                     timer.schedule(timerTask, 0, SCAN_FREQUENCY);
                     scanBtn.setBackgroundColor(Color.RED);
@@ -141,24 +141,22 @@ public class MainActivity extends AppCompatActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     public void scanNetworks(int type) throws JSONException {
-        //myScanResults.addRecord("0000000", 0, "000000");
-        boolean scan = wifiManager.startScan();
-        if (scan) {
-            wifiScanResults = wifiManager.getScanResults();
-            if (type == INIT_SCAN) {
-                storeWifiRecords(wifiScanResults);
-            }
-        }
         String location = Manifest.permission.ACCESS_COARSE_LOCATION;
         String newLocation = Manifest.permission.ACCESS_FINE_LOCATION;
         String[] permissions = new String[] { location, newLocation };
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, permissions , 1);
         }
-        neighboringCellInfoList = telephonyManager.getAllCellInfo();
-        if (type == INIT_SCAN) {
-            storeCellsRecords (neighboringCellInfoList);
+        //myScanResults.addRecord("0000000", 0, "000000");
+        System.out.println("myScanResults ++>: "+ myScanResults.getCount());
+        boolean scan = wifiManager.startScan();
+        if (scan) {
+            wifiScanResults = wifiManager.getScanResults();
+            System.out.println("Scanning size -->: "+ wifiScanResults.size());
+            storeWifiRecords(wifiScanResults);
         }
+        neighboringCellInfoList = telephonyManager.getAllCellInfo();
+        storeCellsRecords (neighboringCellInfoList);
         //System.out.println(neighboringCellInfoList);
     }
 
@@ -176,7 +174,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void storeWifiRecords(List<ScanResult> res) throws JSONException {
-        JSONArray array = new JSONArray();
         for (int i=0; i<res.size(); i++){
             myScanResults.addRecord(res.get(i).BSSID, res.get(i).level, res.get(i).SSID);
         }
@@ -187,7 +184,6 @@ public class MainActivity extends AppCompatActivity {
 
     public void storeCellsRecords(List<CellInfo> res) throws JSONException {
         for (final CellInfo info : res) {
-            JSONObject obj = new JSONObject();
             if (info instanceof CellInfoWcdma) {
                 String ID = Integer.toString(((CellInfoWcdma) info).getCellIdentity().getCid());
                 if (((CellInfoWcdma) info).getCellIdentity().getCid() != 2147483647){
@@ -210,9 +206,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public void clearSharedReferences(){
-        geoFencingEditor.clear();
-        geoFencingEditor.apply();
+    public void clearSharedReferences(SharedPreferences.Editor _editor){
+        _editor.clear();
+        _editor.apply();
     }
 
     private class doAsynchronousScan extends TimerTask {

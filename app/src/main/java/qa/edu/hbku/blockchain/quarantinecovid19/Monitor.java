@@ -3,7 +3,9 @@ package qa.edu.hbku.blockchain.quarantinecovid19;
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.Build;
@@ -20,6 +22,7 @@ import android.telephony.TelephonyManager;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -29,8 +32,10 @@ import java.util.TimerTask;
 
 
 public class Monitor extends AppCompatActivity {
-    private static final int MONITOR_FREQUENCY = 2000;//1 min
+    private static final int MONITOR_FREQUENCY = 10000;//10 sec min
     private static final String GEO_FILE_NAME = "Geo_res.txt";
+    private static final String MON_FILE_NAME = "Mon_res.txt";
+
 
 
     private WifiManager wifiManager;
@@ -43,16 +48,23 @@ public class Monitor extends AppCompatActivity {
     TextView isInTextView;
     TextView isOutTextView;
 
+    TextView inOutTextView;
+
     ScanResults myScanResults;
 
     private float similarityIndex = 0;
     private float noSimilarityIndex = 0;
+
+    SharedPreferences monPref;
+    SharedPreferences.Editor monEditor;
+    ScanResults monScanResults;
 
 
     Timer timer;
     TimerTask timerTask;
     final Handler handler = new Handler();
 
+    int nb_scan = 0;
 
     private ProgressBar progBar;
     private ProgressBar progBar2;
@@ -60,13 +72,21 @@ public class Monitor extends AppCompatActivity {
     private int mProgressStatus=0;
     private int mProgressStatus2=0;
 
+    int nb_successive_scan;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_monitor);
+        nb_successive_scan = 0;
+
+        monPref = getApplicationContext().getSharedPreferences(MON_FILE_NAME,  0);
+        monEditor = monPref.edit();
+        monScanResults = new ScanResults(getApplicationContext(), MON_FILE_NAME);
 
         isInTextView = findViewById(R.id.isInText);
         isOutTextView = findViewById(R.id.isOutText);
+        inOutTextView = findViewById(R.id.in_out_text);
 
         myScanResults = new ScanResults(getApplicationContext(), GEO_FILE_NAME);
 
@@ -79,6 +99,7 @@ public class Monitor extends AppCompatActivity {
 
         progBar= (ProgressBar)findViewById(R.id.progressBar);
         progBar2= (ProgressBar)findViewById(R.id.progressBar2);
+        clearSharedReferences(monEditor);
     }
 
     @Override
@@ -89,6 +110,7 @@ public class Monitor extends AppCompatActivity {
 
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
+
     public void startMonitor()throws JSONException {
         String location = Manifest.permission.ACCESS_COARSE_LOCATION;
         String newLocation = Manifest.permission.ACCESS_FINE_LOCATION;
@@ -101,52 +123,63 @@ public class Monitor extends AppCompatActivity {
         boolean scan = wifiManager.startScan();
         if (scan) {
             wifiScanResultsNow = wifiManager.getScanResults();
-            checkWifiRecords(wifiScanResultsNow);
+            System.out.println("Mon Scanning size -->: "+ wifiScanResultsNow.size());
+            storeWifiRecords(wifiScanResultsNow);
         }
         cellsInfoListNow = telephonyManager.getAllCellInfo();
-        checkCellsRecords(cellsInfoListNow);
-        IamWithinQuarantine();
-    }
-
-    public void checkWifiRecords(List<ScanResult> res) throws JSONException {
-        for (int i=0; i<res.size(); i++){
-             if (myScanResults.contains(res.get(i).BSSID)){
-                similarityIndex ++;
-             } else{
-                 noSimilarityIndex ++;
-             }
+        storeCellsRecords(cellsInfoListNow);
+        //checkRecords(wifiScanResultsNow);
+        //IamWithinQuarantine();
+        if (nb_scan == 4) {
+            checkRecords(wifiScanResultsNow);
+            IamWithinQuarantine();
+        } else {
+            nb_scan ++;
+            startMonitor();
         }
-
+        //clearSharedReferences(monEditor);
     }
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
 
-    public void checkCellsRecords(List<CellInfo> res) throws JSONException {
-        String ID;
+    public void checkRecords(List<ScanResult> res) throws JSONException {
+        System.out.println("HERE : Size MonRes  " + monScanResults.getCount());
+        for (int i=0; i < monScanResults.getCount(); i++){
+            String ID = monScanResults.getID(i);
+            if (myScanResults.contains(ID)){
+                similarityIndex ++;
+            } else{
+                noSimilarityIndex ++;
+            }
+        }
+    }
+
+    public void storeWifiRecords(List<ScanResult> res) throws JSONException {
+        for (int i=0; i<res.size(); i++){
+            monScanResults.addRecord(res.get(i).BSSID, res.get(i).level, res.get(i).SSID);
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+    public void storeCellsRecords(List<CellInfo> res) throws JSONException {
         for (final CellInfo info : res) {
             JSONObject obj = new JSONObject();
             if (info instanceof CellInfoWcdma) {
-                ID = Integer.toString(((CellInfoWcdma) info).getCellIdentity().getCid());
-                if (!ID.equals(Integer.toString(2147483647))) {
-                    if (myScanResults.contains(ID)) {
-                        similarityIndex++;
-                    } else noSimilarityIndex++;
+                String ID = Integer.toString(((CellInfoWcdma) info).getCellIdentity().getCid());
+                if (((CellInfoWcdma) info).getCellIdentity().getCid() != 2147483647){
+                    monScanResults.addRecord(ID, ((CellInfoWcdma) info).getCellSignalStrength().getDbm(), ID);
                 }
             }
             if (info instanceof CellInfoCdma) {
-                ID = Integer.toString(((CellInfoCdma) info).getCellIdentity().getBasestationId());
-                if (!ID.equals(Integer.toString(65535))) {
-                    if (myScanResults.contains(ID)) {
-                        similarityIndex++;
-                    } else noSimilarityIndex++;
+                String ID = Integer.toString(((CellInfoCdma) info).getCellIdentity().getBasestationId());
+                if (ID != Integer.toString(65535)){
+                    monScanResults.addRecord(ID, ((CellInfoCdma) info).getCellSignalStrength().getDbm(), ID);
                 }
             }
             if (info instanceof CellInfoLte) {
-                ID = Integer.toString(((CellInfoLte) info).getCellIdentity().getCi());
-                if (((CellInfoLte) info).getCellIdentity().getCi() != 2147483647) {
-                    if (myScanResults.contains(ID)) {
-                        similarityIndex++;
-                    } else noSimilarityIndex++;
+                String ID = Integer.toString(((CellInfoLte) info).getCellIdentity().getCi());
+                if (((CellInfoLte) info).getCellIdentity().getCi() != 2147483647){
+                    monScanResults.addRecord(ID, ((CellInfoLte) info).getCellSignalStrength().getDbm(), ID);
                 }
             }
         }
@@ -162,8 +195,20 @@ public class Monitor extends AppCompatActivity {
         isInTextView.setText(""+mProgressStatus+"%");
         progBar2.setProgress(mProgressStatus2);
         isOutTextView.setText(""+mProgressStatus2+"%");
+        if (similarityIndex > 0) {
+            inOutTextView.setText("In house (safe)");
+            inOutTextView.setTextColor(Color.GREEN);
+        }else {
+            inOutTextView.setText("Out house (warning!)");
+            inOutTextView.setTextColor(Color.RED);
+        }
 
         System.out.println("Similarity Index:" + similarityIndex);
+    }
+
+    public void clearSharedReferences(SharedPreferences.Editor editor){
+        editor.clear();
+        editor.apply();
     }
 
     private class doAsynchronousMonitor extends TimerTask {
@@ -174,6 +219,8 @@ public class Monitor extends AppCompatActivity {
                 @SuppressWarnings("unchecked")
                 public void run() {
                     try {
+                        clearSharedReferences(monEditor);
+                        nb_scan = 0;
                         startMonitor();
                     }
                     catch (Exception e) {
