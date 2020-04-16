@@ -69,8 +69,8 @@ public class Monitor extends AppCompatActivity {
     private ProgressBar progBar;
     private ProgressBar progBar2;
 
-    private int mProgressStatus=0;
-    private int mProgressStatus2=0;
+    private int similartyRatio=0;
+    private int noSimilartyRatio=0;
 
     int nb_successive_scan;
 
@@ -130,7 +130,7 @@ public class Monitor extends AppCompatActivity {
         storeCellsRecords(cellsInfoListNow);
         //checkRecords(wifiScanResultsNow);
         //IamWithinQuarantine();
-        if (nb_scan == 4) {
+        if (nb_scan == 5) {
             checkRecords(wifiScanResultsNow);
             IamWithinQuarantine();
         } else {
@@ -189,18 +189,23 @@ public class Monitor extends AppCompatActivity {
     public void IamWithinQuarantine() {
         //isInTextView.setText(Float.toString(similarityIndex/myScanResults.getCount()));
         //isOutTextView.setText(Float.toString(noSimilarityIndex/myScanResults.getCount()));
-        mProgressStatus = (int)(similarityIndex/myScanResults.getCount()*100);
-        mProgressStatus2 = (int)(noSimilarityIndex/myScanResults.getCount()*100);
-        progBar.setProgress(mProgressStatus);
-        isInTextView.setText(""+mProgressStatus+"%");
-        progBar2.setProgress(mProgressStatus2);
-        isOutTextView.setText(""+mProgressStatus2+"%");
-        if (similarityIndex > 0) {
-            inOutTextView.setText("In house (safe)");
-            inOutTextView.setTextColor(Color.GREEN);
-        }else {
+        similartyRatio = (int)(similarityIndex/(similarityIndex+noSimilarityIndex)*100);
+        noSimilartyRatio = (int)(noSimilarityIndex/(similarityIndex+noSimilarityIndex)*100);
+        progBar.setProgress(similartyRatio);
+        isInTextView.setText(""+similartyRatio+"%");
+        progBar2.setProgress(noSimilartyRatio);
+        isOutTextView.setText(""+noSimilartyRatio+"%");
+        if (noSimilartyRatio > 50) {
             inOutTextView.setText("Out house (warning!)");
             inOutTextView.setTextColor(Color.RED);
+        }
+        if (similartyRatio == 100) {
+            inOutTextView.setText("In house (safe)");
+            inOutTextView.setTextColor(Color.GREEN);
+        }
+        if ( similartyRatio > 50 && similartyRatio < 100) {
+            inOutTextView.setText("Maybe out house (warning!)");
+            inOutTextView.setTextColor(Color.BLUE);
         }
 
         System.out.println("Similarity Index:" + similarityIndex);
